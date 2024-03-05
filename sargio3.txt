@@ -1,0 +1,466 @@
+App.java
+package ac.id.ukdw;
+
+/**
+ * Hello world!
+ *
+ */
+public class App 
+{
+    public static void main(String[] args )
+    {
+        Creep creep1 = new Creep("Creep1", 500, 40);
+        Creep creep2 = new Creep("Creep2", 500, 40);
+        Creep creep3 = new Creep("Creep3", 500, 40);
+
+        LoneDruid loneDruid = new LoneDruid();
+        Warlock warlock = new Warlock();
+        SpiritBear spiritBear = loneDruid.summon();
+        Golem golem = warlock.summon();
+
+        System.out.println("Informasi karakter awal: ");
+        loneDruid.showCharacterInfo();
+        System.out.println();
+        spiritBear.showCharacterInfo();
+        System.out.println();
+        golem.showCharacterInfo();
+        System.out.println();
+        warlock.showCharacterInfo();
+        System.out.println("=====================================");
+
+//        Battle time!
+        creep1.attack(spiritBear);
+        creep1.attack(warlock);
+        creep1.attack(loneDruid);
+        loneDruid.attack(creep1);
+        loneDruid.attack(creep1);
+        loneDruid.attack(creep1);
+        loneDruid.attack(creep1);
+        spiritBear.attack(creep2);
+        warlock.attack(creep3);
+        golem.attack(creep1);
+        golem.attack(creep2);
+
+//        The End
+        System.out.println("Informasi karakter akhir: ");
+        loneDruid.showCharacterInfo();
+        System.out.println();
+        spiritBear.showCharacterInfo();
+        System.out.println();
+        golem.showCharacterInfo();
+
+    }
+}
+
+AppTest.java
+package ac.id.ukdw;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+
+/**
+ * Unit test for simple App.
+ */
+public class AppTest 
+{
+    private Creep creep,creep2;
+    private Golem golem;
+    private LoneDruid loneDruid;
+    private SpiritBear spiritBear;
+    private Warlock warlock;
+
+
+
+
+    @BeforeEach
+    public void setUp() {
+        creep = new Creep("CreepTest",500,40);
+        creep2 = new Creep("CreepTest",500,40);
+        loneDruid = new LoneDruid();
+        warlock = new Warlock();
+        spiritBear = loneDruid.summon();
+        golem = warlock.summon();
+    }
+
+    @Test
+    public void testAttack() {
+        creep.attack(loneDruid);
+        creep.attack(loneDruid);
+        assertEquals(1720,loneDruid.getHealth());
+        loneDruid.attack(creep);
+        loneDruid.attack(creep);
+        assertEquals(220,creep.getHealth());
+        spiritBear.attack(creep);
+        assertEquals(90,creep.getHealth());
+
+        creep.attack(golem);
+        assertEquals(960,golem.getHealth());
+    }
+
+    @Test
+    public void testCharacterIsDie() {
+        assertFalse(creep.isDie());
+        loneDruid.attack(creep);
+        loneDruid.attack(creep);
+        spiritBear.attack(creep);
+        spiritBear.attack(creep);
+        assertTrue(creep.isDie());
+        assertFalse(loneDruid.isDie());
+        assertFalse(spiritBear.isDie());
+    }
+
+    @Test
+    public void testUpgradeLevel() {
+        loneDruid.setKillCreep(3);
+        loneDruid.upgrade();
+        assertEquals(1,loneDruid.getLevel());
+        assertEquals(0,loneDruid.getKillCreep());
+        assertEquals(160,loneDruid.getDamage());
+        assertEquals("Lone Druid +"+loneDruid.getLevel(),loneDruid.getName());
+        loneDruid.setKillCreep(3);
+        loneDruid.upgrade();
+        assertEquals(2,loneDruid.getLevel());
+        assertEquals(180,loneDruid.getDamage());
+        assertEquals("Lone Druid +"+loneDruid.getLevel(),loneDruid.getName());
+    }
+
+    @Test
+    public void testSummon(){
+        assertEquals(1,warlock.getNumOfSummon());
+        golem.attack(creep);
+        golem.attack(creep);
+        golem.attack(creep);
+        golem.attack(creep);
+        golem.attack(creep);
+
+        golem.attack(creep2);
+        golem.attack(creep2);
+        golem.attack(creep2);
+        golem.attack(creep2);
+        golem.attack(creep2);
+
+        assertEquals(2,golem.getKill());
+        golem.summon();
+        assertEquals(1,golem.getKill());
+
+        assertEquals(loneDruid,spiritBear.getOwner());
+
+    }
+}
+
+Character.java
+package ac.id.ukdw;
+
+public abstract class Character {
+    protected String name;
+    protected int health;
+    protected int damage;
+
+    public Character(String name, int health, int damage) {
+
+    }
+
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public boolean isDie(){
+        return health <=0;
+
+//        isi kode anda disini
+    }
+
+    public void showCharacterInfo() {
+//        isi kode anda disini
+        System.out.println(name);
+        System.out.println(health);
+        System.out.println(damage);
+
+
+    }
+
+    public void attacked(int damage) {
+
+//        isi kode anda disini
+        health -= damage;
+        if(isDie()){
+            System.out.println(name+"dead");
+
+        }
+    }
+}
+
+SummonCharacter.java
+package ac.id.ukdw;
+
+public abstract class SummonCharacter {
+    protected String name;
+    protected int health;
+    protected int damage;
+
+    protected Summoner owner;
+
+    public SummonCharacter(String name,int health, int damage,Summoner owner){
+        this.owner=owner;
+
+    }
+
+
+    public void setOwner(Summoner owner) {
+        this.owner = owner;
+    }
+
+    public Summoner getOwner() {
+        return owner;
+    }
+
+    public void showCharacterInfo() {
+//        isi kode anda disini
+        System.out.println(name);
+        System.out.println(health);
+        System.out.println(damage);
+
+
+    }
+}
+
+Hero.java
+package ac.id.ukdw;
+
+public abstract class Hero extends Character {
+    public Hero(String name, int health, int damage) {
+        super(name, health, damage);
+    }
+
+    public abstract void attack(Character enemy);
+// isi kode anda disini
+
+}
+
+Creep.java
+package ac.id.ukdw;
+
+public class Creep extends Character {
+    public Creep(String name, int health, int damage){
+        super(name,health,damage);
+    }
+
+    @Override
+    public void attack(Hero enemy) {
+
+//        isi kode anda disini
+        int damageDealt=this.damage;
+        enemy.attacked(damageDealt);
+        System.out.println(getName()+"menyerang"+enemy.getName()+"damage"+getDamage());
+
+    }
+}
+
+Golem.java
+package ac.id.ukdw;
+
+public class Golem  extends SummonCharacter{
+    private int kill = 0;
+
+    public Golem(){
+        super("Golem",1000,120,null);
+    }
+
+
+    public void setKill(int kill) {
+        this.kill = kill;
+    }
+
+    public int getKill() {
+        return kill;
+    }
+
+    public void attack(Character enemy){
+    if(enemy instanceof Creep){
+        Creep creep = (Creep) enemy;
+        int damageDealt = this.getDamage();
+        creep.attacked(damageDealt);
+        System.out.println(getName()+'menyerang'+creep.getName()+'damage'+damageDealt);
+        if(creep.isDie()){
+            kill++;
+        }
+    } else {
+        System.out.println('kont');
+    }
+
+}
+
+//    @Override
+//    public void attack(Creep enemy) {
+////        isi kode anda disini
+//    }
+
+//    @Override
+    public Golem summon() {
+//     isi kode anda disini
+        if(kill>0){
+            kill--;
+        return new Golem();
+        } else {
+    return null;
+        }
+    }
+}
+
+Warlock.java
+package ac.id.ukdw;
+
+public class Warlock extends Hero{
+    private int numOfSummon = 0;
+
+    public Warlock(){
+    super("Warlock",700,80);
+    }
+
+    @Override
+    public void attack(Character enemy) {
+////        isi kode anda disini
+        if (enemy instanceof Creep). {
+            Creep creep=(Creep) enemy;
+            int damageDealt = this.getDamage();
+            creep.attacked(damageDealt);
+            System.out.println(getName()+'menyerang'+creep.getName()+'damage'+damageDealt);
+            summon();
+        } else {
+            System.out.println((String) null);
+        }
+    }
+
+
+    public void setNumOfSummon(int numOfSummon) {
+        this.numOfSummon = numOfSummon;
+    }
+
+    public int getNumOfSummon() {
+        return numOfSummon;
+    }
+
+
+    public void summon() {
+        this.numOfSummon++;
+        Golem golem = new Golem();
+    }
+}
+
+LoneDruid.java
+package ac.id.ukdw;
+
+public abstract class LoneDruid extends Hero {
+    private int killCreep = 0;
+    private int level = 0;
+
+    public LoneDruid(){
+        super("LoneDruid", 1800, 140);
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setKillCreep(int killCreep) {
+        this.killCreep = killCreep;
+    }
+
+    public int getKillCreep() {
+        return killCreep;
+    }
+    @Override
+    public void attack(Creep enemy) {
+//        isi kode anda disini
+        int damageDealt = this.getDamage();
+        enemy.attack(damageDealt);
+        System.out.println(getName()+"menyerang"+ enemy.getName()+"damage"+damageDealt);
+        if(enemy.isDie()){
+            killCreep++;
+            if(killCreep>=3){
+                upgrade();
+            }
+        }
+    }
+
+
+    public void showCharacterInfo(){
+        super.showCharacterInfo();
+        System.out.println("Kill creep: "+killCreep);
+    }
+    @Override
+    public SpiritBear summon() {
+//        isi kode anda disini
+        return new SpiritBear();
+    }
+
+
+
+
+    @Override
+    public void upgrade() {
+        level++;
+        killCreep -= 3;
+        setName("Lone Druid"+ level);
+        setDamage(getDamage() + 20);
+//        isi kode anda disini
+    }
+
+    @Override
+    public void showCharacterInfo() {
+        //        isi kode anda disini
+    }
+}
+
+SpiritBear.java
+package ac.id.ukdw;
+
+public class SpiritBear extends SummonCharacter {
+
+    public SpiritBear(){
+        super('Spirit Bear',1000,130,null);
+    }
+
+    public void attack(Character enemy) {
+        if (enemy instanceof Creep) ;
+        Creep creep = (Creep) enemy;
+        int damageDealt = this.getDamage();
+        creep.attacked(damageDealt);
+        System.out.println(getName() + 'menyerang' + creep.getName() + 'damage' + damageDealt);
+    } else {
+        System.out.println(null);
+
+
+    }
+
+
+}
+
